@@ -20,42 +20,28 @@ replacements = [
     ("Core/Config.cpp", 'ConfigSetting("Enable Logging", SETTING(g_Config, bEnableLogging), true, CfgFlag::PER_GAME)', 'ConfigSetting("Enable Logging", SETTING(g_Config, bEnableLogging), false, CfgFlag::PER_GAME)'),
     ("Core/Config.cpp", 'ConfigSetting("CheckForNewVersion", SETTING(g_Config, bCheckForNewVersion), true, CfgFlag::DEFAULT)', 'ConfigSetting("CheckForNewVersion", SETTING(g_Config, bCheckForNewVersion), false, CfgFlag::DEFAULT)'),
     ("android/build.gradle.kts", 'isJniDebuggable = true', 'isJniDebuggable = false'),
-    ("android/build.gradle.kts", 'create("optimized") {
-			isMinifyEnabled = false', 'create("optimized") {
-			isDebuggable = false
-			isMinifyEnabled = false'),
+    ("android/build.gradle.kts", 'create("optimized") {\n\t\t\tisMinifyEnabled = false\n\t\t\tisJniDebuggable = true', 'create("optimized") {\n\t\t\tisDebuggable = false\n\t\t\tisMinifyEnabled = false\n\t\t\tisJniDebuggable = false'),
     ("android/AndroidManifest.xml", '<profileable android:shell="true" android:enabled="true" />', '<profileable android:shell="false" android:enabled="false" />'),
 ]
 for item in replacements:
     replace_once(*item)
 
-# Use a separate application ID for the Hyouka normal flavor.
 replace_once(
     "android/build.gradle.kts",
-    'applicationId = "org.ppsspp.ppsspp"
-			dimension = "variant"',
-    'applicationId = "com.hyouka.psp60"
-			dimension = "variant"',
+    'applicationId = "org.ppsspp.ppsspp"\n\t\t\tdimension = "variant"',
+    'applicationId = "com.hyouka.psp60"\n\t\t\tdimension = "variant"',
 )
 
 profile = ROOT / "android/hyouka-a73-profile.txt"
 profile.write_text(
-    "Hyouka PSP 60
-"
-    "Target device: OPPO A73 CPH2095
-"
-    "SoC: Qualcomm Snapdragon 662
-"
-    "GPU: Qualcomm Adreno 610
-"
-    "Display: 60 Hz, 1080x2400
-"
-    "Profile: Vulkan-first, low-latency, 1 inflight frame, duplicate frames enabled
-"
-    "Logging/debug defaults: disabled
-"
-    "Android optimized build: non-debuggable, non-profileable
-",
+    "Hyouka PSP 60\n"
+    "Target device: OPPO A73 CPH2095\n"
+    "SoC: Qualcomm Snapdragon 662\n"
+    "GPU: Qualcomm Adreno 610\n"
+    "Display: 60 Hz, 1080x2400\n"
+    "Profile: Vulkan-first, low-latency, 1 inflight frame, duplicate frames enabled\n"
+    "Logging/debug defaults: disabled\n"
+    "Android optimized build: non-debuggable, non-profileable\n",
     encoding="utf-8",
 )
 print("Hyouka PSP 60 OPPO A73 CPH2095 profile applied.")
