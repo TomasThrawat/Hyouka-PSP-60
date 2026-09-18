@@ -27,14 +27,18 @@ jobs:
       - name: Apply Hyouka OPPO A73 profile
         run: python3 scripts/apply-hyouka-a73.py
 
-      - name: Verify OPPO A73 profile
+      - name: Verify complete A73 profile
         run: |
-          grep -n 'AndroidFramerateMode' Core/Config.cpp
-          grep -n 'InflightFrames' Core/Config.cpp
-          grep -n 'RenderDuplicateFrames' Core/Config.cpp
-          grep -n 'LowLatencyPresent' Core/Config.cpp
+          grep -n 'AndroidFramerateMode.*), 3,' Core/Config.cpp
+          grep -n 'InflightFrames.*), 1,' Core/Config.cpp
+          grep -n 'RenderDuplicateFrames.*true' Core/Config.cpp
+          grep -n 'LowLatencyPresent.*true' Core/Config.cpp
+          grep -n 'Enable Logging.*false' Core/Config.cpp
+          grep -n 'CheckForNewVersion.*false' Core/Config.cpp
+          grep -n 'applicationId = "com.hyouka.psp60"' android/build.gradle.kts
           grep -n 'isDebuggable = false' android/build.gradle.kts
           grep -n 'isJniDebuggable = false' android/build.gradle.kts
+          grep -n '<profileable android:shell="false" android:enabled="false" />' android/AndroidManifest.xml
           test -f android/hyouka-a73-profile.txt
 
       - name: Build Android optimized APK
@@ -43,8 +47,9 @@ jobs:
       - name: Collect APK
         run: |
           mkdir -p dist
-          find android/build -type f -name '*.apk' -print -exec cp {} dist/ \;
+          find android/build -type f -name '*.apk' -print -exec cp {} dist/ ;
           test -n "$(find dist -type f -name '*.apk' -print -quit)"
+          ls -lh dist/*.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v6
