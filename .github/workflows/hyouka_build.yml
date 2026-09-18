@@ -1,0 +1,74 @@
+name: Hyouka PSP 60 APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      buildVariant:
+        description: "Android build variant"
+        required: true
+        default: "NormalOptimized"
+        type: choice
+        options:
+          - NormalOptimized
+          - NormalDebug
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Apply Hyouka performance profile
+        run: python3 scripts/apply-hyouka-performance.py
+
+      - name: Verify patched configuration
+        run: |
+          grep -n 'AndroidFramerateMode' Core/Config.cpp
+          grep -n 'InflightFrames' Core/Config.cpp
+          grep -n 'RenderDuplicateFrames' Core/Config.cpp
+          grep -n 'LowLatencyPresent' Core/Config.cpp
+          grep -n 'applicationId' android/build.gradle.kts
+          grep -n 'app_name' android/res/values/strings.xml
+
+      - name: Build APK
+        run: ./gradlew --no-daemon --stacktrace assemble\${{ github.event.inputs.buildVariant }}
+
+      - name: Collect APK
+        run: |
+          mkdir -p dist
+          find android/build -type f -name '*.apk' -print -exec cp {} dist/ \;
+          test -n "$(find dist -type f -name '*.apk' -print -quit)"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: hyouka-psp-60-\${{ github.event.inputs.buildVariant }}
+          path: dist/*.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: \${{ github.token }}
+        run: |
+          tag="hyouka-psp-60-\${{ github.run_number }}"
+          gh release create "$tag" dist/*.apk \
+            --repo "\${{ github.repository }}" \
+            --target "\${{ github.sha }}" \
+            --title "Hyouka PSP 60 build \${{ github.run_number }}" \
+            --notes "Hyouka PSP 60 Android build from PPSSPP source at commit \${{ github.sha }}"
