@@ -1,16 +1,7 @@
-name: Hyouka PSP 60 APK
+name: Hyouka PSP 60 Minimal APK
 
 on:
   workflow_dispatch:
-    inputs:
-      buildVariant:
-        description: "Android build variant"
-        required: true
-        default: "NormalOptimized"
-        type: choice
-        options:
-          - NormalOptimized
-          - NormalDebug
 
 permissions:
   contents: write
@@ -33,20 +24,26 @@ jobs:
           java-version: "17"
           cache: gradle
 
-      - name: Apply Hyouka performance profile
+      - name: Apply Hyouka minimal play-only profile
         run: python3 scripts/apply-hyouka-performance.py
 
-      - name: Verify patched configuration
+      - name: Verify minimal configuration
         run: |
           grep -n 'AndroidFramerateMode' Core/Config.cpp
           grep -n 'InflightFrames' Core/Config.cpp
           grep -n 'RenderDuplicateFrames' Core/Config.cpp
           grep -n 'LowLatencyPresent' Core/Config.cpp
-          grep -n 'applicationId' android/build.gradle.kts
-          grep -n 'app_name' android/res/values/strings.xml
+          grep -n 'Enable Logging' Core/Config.cpp
+          grep -n 'RemoteDebuggerOnStartup' Core/Config.cpp
+          grep -n 'RemoteDebuggerLocal' Core/Config.cpp
+          grep -n 'LogFrameDrops' Core/Config.cpp
+          grep -n 'GpuLogProfiler' Core/Config.cpp
+          grep -n 'ShowDeveloperMenu' Core/Config.cpp
+          grep -n 'isDebuggable = false' android/build.gradle.kts
+          grep -n 'isJniDebuggable = false' android/build.gradle.kts
 
-      - name: Build APK
-        run: ./gradlew --no-daemon --stacktrace assemble${{ github.event.inputs.buildVariant }}
+      - name: Build Android optimized APK
+        run: ./gradlew --no-daemon --stacktrace assembleNormalOptimized
 
       - name: Collect APK
         run: |
@@ -57,7 +54,7 @@ jobs:
       - name: Upload APK artifact
         uses: actions/upload-artifact@v6
         with:
-          name: hyouka-psp-60-${{ github.event.inputs.buildVariant }}
+          name: hyouka-psp-60-minimal
           path: dist/*.apk
           if-no-files-found: error
           retention-days: 14
@@ -66,9 +63,5 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag="hyouka-psp-60-${{ github.run_number }}"
-          gh release create "$tag" dist/*.apk \
-            --repo "${{ github.repository }}" \
-            --target "${{ github.sha }}" \
-            --title "Hyouka PSP 60 build ${{ github.run_number }}" \
-            --notes "Hyouka PSP 60 Android build from PPSSPP source at commit ${{ github.sha }}"
+          tag="hyouka-psp-60-minimal-${{ github.run_number }}"
+          gh release create "$tag" dist/*.apk             --repo "${{ github.repository }}"             --target "${{ github.sha }}"             --title "Hyouka PSP 60 Minimal ${{ github.run_number }}"             --notes "Minimal Android play-only build from PPSSPP source at commit ${{ github.sha }}. Debug logging, file logging, developer menu, debug overlay, dropped-frame logging, GPU log profiler, and remote debugger are disabled by default."
