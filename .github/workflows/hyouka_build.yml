@@ -1,4 +1,4 @@
-name: Hyouka PSP 60 Minimal APK
+name: Hyouka PSP 60 OPPO A73 APK
 
 on:
   workflow_dispatch:
@@ -24,23 +24,18 @@ jobs:
           java-version: "17"
           cache: gradle
 
-      - name: Apply Hyouka minimal play-only profile
-        run: python3 scripts/apply-hyouka-performance.py
+      - name: Apply Hyouka OPPO A73 profile
+        run: python3 scripts/apply-hyouka-a73.py
 
-      - name: Verify minimal configuration
+      - name: Verify OPPO A73 profile
         run: |
           grep -n 'AndroidFramerateMode' Core/Config.cpp
           grep -n 'InflightFrames' Core/Config.cpp
           grep -n 'RenderDuplicateFrames' Core/Config.cpp
           grep -n 'LowLatencyPresent' Core/Config.cpp
-          grep -n 'Enable Logging' Core/Config.cpp
-          grep -n 'RemoteDebuggerOnStartup' Core/Config.cpp
-          grep -n 'RemoteDebuggerLocal' Core/Config.cpp
-          grep -n 'LogFrameDrops' Core/Config.cpp
-          grep -n 'GpuLogProfiler' Core/Config.cpp
-          grep -n 'ShowDeveloperMenu' Core/Config.cpp
           grep -n 'isDebuggable = false' android/build.gradle.kts
           grep -n 'isJniDebuggable = false' android/build.gradle.kts
+          test -f android/hyouka-a73-profile.txt
 
       - name: Build Android optimized APK
         run: ./gradlew --no-daemon --stacktrace assembleNormalOptimized
@@ -54,7 +49,7 @@ jobs:
       - name: Upload APK artifact
         uses: actions/upload-artifact@v6
         with:
-          name: hyouka-psp-60-minimal
+          name: hyouka-psp-60-oppo-a73
           path: dist/*.apk
           if-no-files-found: error
           retention-days: 14
@@ -63,5 +58,5 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag="hyouka-psp-60-minimal-${{ github.run_number }}"
-          gh release create "$tag" dist/*.apk             --repo "${{ github.repository }}"             --target "${{ github.sha }}"             --title "Hyouka PSP 60 Minimal ${{ github.run_number }}"             --notes "Minimal Android play-only build from PPSSPP source at commit ${{ github.sha }}. Debug logging, file logging, developer menu, debug overlay, dropped-frame logging, GPU log profiler, and remote debugger are disabled by default."
+          tag="hyouka-psp-60-oppo-a73-${{ github.run_number }}"
+          gh release create "$tag" dist/*.apk             --repo "${{ github.repository }}"             --target "${{ github.sha }}"             --title "Hyouka PSP 60 OPPO A73 ${{ github.run_number }}"             --notes "Device-targeted Android build for OPPO A73 CPH2095 (Snapdragon 662 / Adreno 610 / 60 Hz)."
