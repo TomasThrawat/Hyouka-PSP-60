@@ -46,7 +46,7 @@ jobs:
           grep -n 'app_name' android/res/values/strings.xml
 
       - name: Build APK
-        run: ./gradlew --no-daemon --stacktrace assemble\${{ github.event.inputs.buildVariant }}
+        run: ./gradlew --no-daemon --stacktrace assemble${{ github.event.inputs.buildVariant }}
 
       - name: Collect APK
         run: |
@@ -57,18 +57,18 @@ jobs:
       - name: Upload APK artifact
         uses: actions/upload-artifact@v6
         with:
-          name: hyouka-psp-60-\${{ github.event.inputs.buildVariant }}
+          name: hyouka-psp-60-${{ github.event.inputs.buildVariant }}
           path: dist/*.apk
           if-no-files-found: error
           retention-days: 14
 
       - name: Publish GitHub Release
         env:
-          GH_TOKEN: \${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-          tag="hyouka-psp-60-\${{ github.run_number }}"
+          tag="hyouka-psp-60-${{ github.run_number }}"
           gh release create "$tag" dist/*.apk \
-            --repo "\${{ github.repository }}" \
-            --target "\${{ github.sha }}" \
-            --title "Hyouka PSP 60 build \${{ github.run_number }}" \
-            --notes "Hyouka PSP 60 Android build from PPSSPP source at commit \${{ github.sha }}"
+            --repo "${{ github.repository }}" \
+            --target "${{ github.sha }}" \
+            --title "Hyouka PSP 60 build ${{ github.run_number }}" \
+            --notes "Hyouka PSP 60 Android build from PPSSPP source at commit ${{ github.sha }}"
