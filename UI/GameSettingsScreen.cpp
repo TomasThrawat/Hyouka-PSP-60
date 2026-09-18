@@ -508,6 +508,12 @@ void GameSettingsScreen::CreateGraphicsSettings(UI::ViewGroup *graphicsSettings)
 
 	graphicsSettings->Add(new ItemHeader(gr->T("Performance")));
 	CheckBox *frameDuplication = graphicsSettings->Add(new CheckBox(&g_Config.bRenderDuplicateFrames, gr->T("Render duplicate frames to 60hz")));
+
+	CheckBox *force60FPS = graphicsSettings->Add(new CheckBox(&g_Config.bForce60FPS, gr->T("Force 60 FPS (Experimental)")));
+	force60FPS->SetEnabledFunc([] {
+		return !g_Config.bSkipBufferEffects;
+	});
+	graphicsSettings->Add(new SettingHint(gr->T("Force60FPS Tip", "Experimental: attempts to keep 60 FPS timing and 60 Hz presentation. Games with their own 30 FPS limit may still run at 30 FPS."), force60FPS));
 	frameDuplication->SetEnabledFunc([] {
 		return !g_Config.bSkipBufferEffects && g_Config.iFrameSkip == 0;
 	});

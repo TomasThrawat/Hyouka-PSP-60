@@ -365,7 +365,7 @@ void __DisplaySetWasPaused() {
 
 // TODO: Should return 59.997?
 static int FrameTimingLimit() {
-	if (!NetworkAllowSpeedControl()) {
+	if (g_Config.bForce60FPS || !NetworkAllowSpeedControl()) {
 		return 60;
 	}
 
@@ -614,7 +614,7 @@ void __DisplayFlip(int cyclesLate) {
 	// Also let's always flip for animated shaders.
 	bool postEffectRequiresFlip = false;
 
-	bool duplicateFrames = g_Config.bRenderDuplicateFrames && g_Config.iFrameSkip == 0;
+	bool duplicateFrames = (g_Config.bRenderDuplicateFrames || g_Config.bForce60FPS) && (g_Config.iFrameSkip == 0 || g_Config.bForce60FPS);
 
 	if (!g_Config.bSkipBufferEffects) {
 		postEffectRequiresFlip = duplicateFrames || g_Config.bShaderChainRequires60FPS;
