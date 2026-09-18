@@ -45,11 +45,29 @@ jobs:
         run: ./gradlew --no-daemon --stacktrace assembleNormalOptimized
 
       - name: Collect APK
+        shell: bash
         run: |
+          set -euo pipefail
+          rm -rf dist
           mkdir -p dist
-          find android/build -type f -name '*.apk' -print -exec cp {} dist/ ;
-          test -n "$(find dist -type f -name '*.apk' -print -quit)"
-          ls -lh dist/*.apk
+
+          mapfile -d '' apks < <(find android/build -type f -name '*.apk' -print0)
+
+          if (( ${#apks[@]} == 0 )); then
+            echo "ERROR: No APK was produced."
+            echo "APK/build outputs:"
+            find android/build -maxdepth 6 -type f \( -name '*.apk' -o -name '*.aab' \) -print | sort || true
+            echo "Recent build output directories:"
+            find android/build -maxdepth 4 -type d -print | sort | tail -n 100 || true
+            exit 1
+          fi
+
+          for apk in "${apks[@]}"; do
+            cp -- "$apk" dist/
+          done
+
+          echo "Collected APK files:"
+          find dist -maxdepth 1 -type f -name '*.apk' -print -exec ls -lh {} \;
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v6
@@ -63,5 +81,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          set -euo pipefail
           tag="hyouka-psp-60-oppo-a73-${{ github.run_number }}"
-          gh release create "$tag" dist/*.apk             --repo "${{ github.repository }}"             --target "${{ github.sha }}"             --title "Hyouka PSP 60 OPPO A73 ${{ github.run_number }}"             --notes "Device-targeted Android build for OPPO A73 CPH2095 (Snapdragon 662 / Adreno 610 / 60 Hz)."
+          gh release create "$tag" dist/*.apk \
+            --repo "${{ github.repository }}" \
+            --target "${{ github.sha }}" \
+            --title "Hyouka PSP 60 OPPO A73 ${{ github.run_number }}" \
+            --notes "Device-targeted Android build for OPPO A73 CPH2095 (Snapdragon 662 / Adreno 610 / 60 Hz)."
