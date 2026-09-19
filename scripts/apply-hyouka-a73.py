@@ -20,7 +20,7 @@ replacements = [
     ("Core/Config.cpp", 'ConfigSetting("Enable Logging", SETTING(g_Config, bEnableLogging), true, CfgFlag::PER_GAME)', 'ConfigSetting("Enable Logging", SETTING(g_Config, bEnableLogging), false, CfgFlag::PER_GAME)'),
     ("Core/Config.cpp", 'ConfigSetting("CheckForNewVersion", SETTING(g_Config, bCheckForNewVersion), true, CfgFlag::DEFAULT)', 'ConfigSetting("CheckForNewVersion", SETTING(g_Config, bCheckForNewVersion), false, CfgFlag::DEFAULT)'),
     ("android/build.gradle.kts", 'isJniDebuggable = true', 'isJniDebuggable = false'),
-    ("android/build.gradle.kts", 'create("optimized") {\n\t\t\tisMinifyEnabled = false\n\t\t\tisJniDebuggable = true', 'create("optimized") {\n\t\t\tisDebuggable = false\n\t\t\tisMinifyEnabled = false\n\t\t\tisJniDebuggable = false'),
+    ("android/build.gradle.kts", 'create("optimized") {\n\t\t\tinitWith(getByName("release"))\n\t\t\tisMinifyEnabled = false\n\t\t\tisJniDebuggable = true', 'create("optimized") {\n\t\t\tisDebuggable = false\n\t\t\tisMinifyEnabled = false\n\t\t\tisJniDebuggable = false'),
     ("android/AndroidManifest.xml", '<profileable android:shell="true" android:enabled="true" />', '<profileable android:shell="false" android:enabled="false" />'),
 ]
 for item in replacements:

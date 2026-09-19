@@ -142,6 +142,7 @@ android {
 			signingConfig = signingConfigs.getByName("debug")
 		}
 		create("optimized") {
+			initWith(getByName("release"))
 			isMinifyEnabled = false
 			isJniDebuggable = true
 			signingConfig = signingConfigs.getByName("debug")
