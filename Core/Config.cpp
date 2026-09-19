@@ -757,7 +757,11 @@ static const ConfigSetting graphicsSettings[] = {
 	ConfigSetting("LogFrameDrops", SETTING(g_Config, bLogFrameDrops), false, CfgFlag::DEFAULT),
 
 	ConfigSetting("InflightFrames", SETTING(g_Config, iInflightFrames), 2, CfgFlag::DEFAULT),
+	#if PPSSPP_PLATFORM(ANDROID)
+	ConfigSetting("RenderDuplicateFrames", SETTING(g_Config, bRenderDuplicateFrames), true, CfgFlag::PER_GAME),
+#else
 	ConfigSetting("RenderDuplicateFrames", SETTING(g_Config, bRenderDuplicateFrames), false, CfgFlag::PER_GAME),
+#endif
 	ConfigSetting("Force60FPS", SETTING(g_Config, bForce60FPS), false, CfgFlag::DEFAULT),
 
 	ConfigSetting("MultiThreading", SETTING(g_Config, bRenderMultiThreading), true, CfgFlag::DEFAULT),
@@ -1380,6 +1384,11 @@ void Config::Load(const char *iniFileName, const char *controllerIniFilename) {
 		postShaderSetting->Set("ColorCorrectionSettingCurrentValue2", 1.5f);
 		postShaderSetting->Set("ColorCorrectionSettingCurrentValue3", 1.1f);
 		postShaderSetting->Set("ColorCorrectionSettingCurrentValue4", 1.0f);
+#if PPSSPP_PLATFORM(ANDROID)
+	} else if (!postShadersInitialized) {
+		postShaderChain->Set("PostShader1", "HyoukaFrameGen");
+		postShaderSetting->Set("HyoukaFrameGenSettingCurrentValue1", 0.65f);
+#endif
 	}
 
 	// Load post process shader values
