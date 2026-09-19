@@ -13,19 +13,9 @@ import android.util.Log;
 
 public class PowerSaveModeReceiver extends BroadcastReceiver {
 	private static final String TAG = PowerSaveModeReceiver.class.getSimpleName();
-	private static boolean isBatteryLow = false;
 
 	@Override
 	public void onReceive(final Context context, final Intent intent) {
-		final String action = intent.getAction();
-		if (Intent.ACTION_BATTERY_LOW.equals(action)) {
-			isBatteryLow = true;
-		} else if (Intent.ACTION_BATTERY_OKAY.equals(action)) {
-			isBatteryLow = false;
-		} else if (PowerManager.ACTION_POWER_SAVE_MODE_CHANGED.equals(action)) {
-			// sendPowerSaving()
-		}
-
 		sendPowerSaving(context);
 	}
 
@@ -40,11 +30,8 @@ public class PowerSaveModeReceiver extends BroadcastReceiver {
 			@Override
 			public void onChange(boolean selfChange, Uri uri) {
 				super.onChange(selfChange, uri);
-
 				String key = uri.getPath();
-				if (key == null) {
-					return;
-				}
+				if (key == null) return;
 				key = key.substring(key.lastIndexOf("/") + 1);
 				if (key.equals("user_powersaver_enable") || key.equals("psm_switch") || key.equals("powersaving_switch")) {
 					sendPowerSaving(activity);
@@ -58,25 +45,15 @@ public class PowerSaveModeReceiver extends BroadcastReceiver {
 		context.unregisterReceiver(this);
 	}
 
-	private static boolean getNativePowerSaving(final Context context) {
-		final PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-		return pm.isPowerSaveMode();
-	}
-
 	protected void sendPowerSaving(final Context context) {
-		boolean isPowerSaving = getNativePowerSaving(context);
-
 		if (!PpssppActivity.libraryLoaded) {
 			Log.e(TAG, "Cannot send power saving: Library not loaded");
 			return;
 		}
-
 		try {
-			if (isBatteryLow || isPowerSaving) {
-				NativeApp.sendMessageFromJava("core_powerSaving", "true");
-			} else {
-				NativeApp.sendMessageFromJava("core_powerSaving", "false");
-			}
+			// Keep PSP emulation out of its internal power-saving/throttling path.
+			// Android/device battery saver remains an OS-level control.
+			NativeApp.sendMessageFromJava("core_powerSaving", "false");
 		} catch (Exception e) {
 			Log.e(TAG, "Exception in sendPowerSaving: " + e);
 		}
