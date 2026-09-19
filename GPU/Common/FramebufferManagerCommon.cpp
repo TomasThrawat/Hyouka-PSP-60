@@ -1590,6 +1590,7 @@ void FramebufferManagerCommon::CopyDisplayToOutput(const DisplayLayoutConfig &co
 
 void FramebufferManagerCommon::PrepareCopyDisplayToOutput(const DisplayLayoutConfig &config, bool reallyDirty) {
 	DownloadFramebufferOnSwitch(currentRenderVfb_);
+	presentation_->SetFrameGenerationDuplicate(!reallyDirty && g_Config.bRenderDuplicateFrames);
 
 	if (displayFramebufPtr_ == 0) {
 		if (GetUIState() != UISTATE_PAUSEMENU) {

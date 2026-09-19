@@ -36,6 +36,8 @@ struct PostShaderUniforms {
 	float setting[4];
 	float video; float pad[3];
 	float vr;
+	float frameGeneration;
+	float frameGenerationPad[3];
 	// Used on Direct3D9.
 	float gl_HalfPixel[4];
 };
@@ -123,6 +125,7 @@ public:
 	void DeviceRestore(Draw::DrawContext *draw);
 
 	void UpdateUniforms(bool hasVideo);
+	void SetFrameGenerationDuplicate(bool duplicate) { frameGenerationDuplicate_ = duplicate; }
 
 	// One of these must be called every frame.
 	void SourceBlank();
@@ -186,6 +189,7 @@ protected:
 	bool usePostShader_ = false;
 	bool restorePostShader_ = false;
 	bool presentedThisFrame_ = false;
+	bool frameGenerationDuplicate_ = false;
 	ShaderLanguage lang_;
 
 	struct PrevFBO {

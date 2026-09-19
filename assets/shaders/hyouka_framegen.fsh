@@ -35,6 +35,11 @@ void main() {
     vec3 current = SampleCurrent(uv);
     float strength = clamp(u_setting.x, 0.0, 1.0);
 
+    if (u_frameGeneration < 0.5) {
+        gl_FragColor = vec4(current, 1.0);
+        return;
+    }
+
     // Estimate a small local motion vector by matching the current pixel
     // against the previous frame. This is intentionally lightweight for
     // mobile Adreno GPUs and avoids a full-resolution motion-vector buffer.
@@ -91,9 +96,10 @@ void main() {
     // u_timeDelta.x is wall-clock delta. Keep interpolation conservative
     // when timing is unstable, which helps avoid large temporal jumps.
     float timing = clamp(u_timeDelta.x * 60.0, 0.5, 2.0);
-    float temporalWeight = mix(0.18, 0.42, matchConfidence);
+    float temporalWeight = mix(0.35, 0.50, matchConfidence);
     temporalWeight *= mix(0.85, 1.0, motionConfidence);
     temporalWeight *= strength;
+    temporalWeight = max(temporalWeight, 0.35);
     temporalWeight /= timing;
     temporalWeight *= (1.0 - rejection);
 

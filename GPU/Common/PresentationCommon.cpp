@@ -243,6 +243,7 @@ void PresentationCommon::CalculatePostShaderUniforms(int bufferWidth, int buffer
 	uniforms->timeDelta[3] = time[3] != previousUniforms_.time[3] ? 1.0f : 0.0f;
 	uniforms->video = hasVideo_ ? 1.0f : 0.0f;
 	uniforms->vr = IsVREnabled() && IsBigScreenVRMode() ? 1.0f : 0.0f;
+	uniforms->frameGeneration = frameGenerationDuplicate_ ? 1.0f : 0.0f;
 
 	// The shader translator tacks this onto our shaders, if we don't set it they render garbage.
 	uniforms->gl_HalfPixel[0] = u_pixel_delta * 0.5f;
@@ -371,6 +372,7 @@ bool PresentationCommon::CompilePostShader(const ShaderInfo *shaderInfo, Draw::P
 		{ "u_setting", 5, 5, UniformType::FLOAT4, offsetof(PostShaderUniforms, setting) },
 		{ "u_video", 6, 6, UniformType::FLOAT1, offsetof(PostShaderUniforms, video) },
 		{ "u_vr", 7, 7, UniformType::FLOAT1, offsetof(PostShaderUniforms, vr) },
+		{ "u_frameGeneration", 8, 8, UniformType::FLOAT1, offsetof(PostShaderUniforms, frameGeneration) },
 	} };
 
 	Draw::Pipeline *pipeline = CreatePipeline({ vs, fs }, true, &postShaderDesc);
@@ -850,7 +852,7 @@ void PresentationCommon::RunPostshaderPasses(const DisplayLayoutConfig &config, 
 			Draw::Pipeline *postShaderPipeline = postShaderPipelines_[i];
 			const ShaderInfo *shaderInfo = &postShaderInfo_[i];
 			Draw::Framebuffer *postShaderFramebuffer = postShaderFramebuffers_[i];
-			if (!isFinalAtOutputResolution && i == postShaderFramebuffers_.size() - 1 && !previousFramebuffers_.empty()) {
+			if (!frameGenerationDuplicate_ && !isFinalAtOutputResolution && i == postShaderFramebuffers_.size() - 1 && !previousFramebuffers_.empty()) {
 				// This is the last pass and we're going direct to the backbuffer after this.
 				// Redirect output to a separate framebuffer to keep the previous frame.
 				previousIndex_++;
@@ -874,7 +876,7 @@ void PresentationCommon::RunPostshaderPasses(const DisplayLayoutConfig &config, 
 	}
 
 	// If we need to save the previous frame, we have to save any final pass in a framebuffer.
-	if (isFinalAtOutputResolution && !previousFramebuffers_.empty()) {
+	if (!frameGenerationDuplicate_ && isFinalAtOutputResolution && !previousFramebuffers_.empty()) {
 		Draw::Pipeline *postShaderPipeline = postShaderPipelines_.back();
 		const ShaderInfo *shaderInfo = &postShaderInfo_.back();
 
